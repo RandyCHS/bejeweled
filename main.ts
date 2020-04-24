@@ -35,6 +35,26 @@ function setupBoard () {
     }
     scanBoard()
 }
+function doSwap () {
+    item1 = cursor
+    item2 = cursor2
+    for (let i of sprites.allOfKind(SpriteKind.Item)) {
+        if (cursor.overlapsWith(i)) {
+            item1 = i
+        }
+        if (cursor2.overlapsWith(i)) {
+            item2 = i
+        }
+    }
+    if (item1.kind() == SpriteKind.Item && item2.kind() == SpriteKind.Item) {
+        dx = item1.x - item2.x
+        dy = item1.y - item2.y
+        item2.x += dx
+        item2.y += dy
+        item1.x += 0 - dx
+        item1.y += 0 - dy
+    }
+}
 function finishScan (scan: Sprite) {
     if (sprites.readDataNumber(scan, "numHit") >= 3) {
         clear = sprites.create(img`
@@ -63,6 +83,20 @@ function finishScan (scan: Sprite) {
         sprites.setDataNumber(clear, "type", sprites.readDataNumber(scan, "type"))
     }
 }
+controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (isSelected) {
+        cursor2.x = cursor.x - 16
+    } else {
+        cursor.x += -16
+    }
+})
+controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (isSelected) {
+        cursor2.y = cursor.y + 16
+    } else {
+        cursor.y += 16
+    }
+})
 function scanFrom (x: number, y: number) {
     scan = sprites.create(img`
 . . . . . . . . . . . . . . . . 
@@ -87,40 +121,6 @@ function scanFrom (x: number, y: number) {
     scan.setVelocity(1, 0)
     scan.setFlag(SpriteFlag.AutoDestroy, false)
 }
-function doSwap () {
-    item1 = cursor
-    item2 = cursor2
-    for (let i of sprites.allOfKind(SpriteKind.Item)) {
-        if (cursor.overlapsWith(i)) {
-            item1 = i
-        }
-        if (cursor2.overlapsWith(i)) {
-            item2 = i
-        }
-    }
-    if (item1.kind() == SpriteKind.Item && item2.kind() == SpriteKind.Item) {
-        dx = item1.x - item2.x
-        dy = item1.y - item2.y
-        item2.x += dx
-        item2.y += dy
-        item1.x += 0 - dx
-        item1.y += 0 - dy
-    }
-}
-controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (isSelected) {
-        cursor2.x = cursor.x - 16
-    } else {
-        cursor.x += -16
-    }
-})
-controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (isSelected) {
-        cursor2.y = cursor.y + 16
-    } else {
-        cursor.y += 16
-    }
-})
 sprites.onOverlap(SpriteKind.Scan, SpriteKind.Item, function (sprite, otherSprite) {
     if (!(sprites.readDataBoolean(sprite, "hasType"))) {
         sprites.setDataBoolean(sprite, "hasType", true)
@@ -198,14 +198,14 @@ sprites.onOverlap(SpriteKind.Clear, SpriteKind.Item, function (sprite, otherSpri
         sprite.destroy()
     }
 })
+let scan: Sprite = null
 let isSelected = false
+let clear: Sprite = null
 let dy = 0
 let dx = 0
 let cursor2: Sprite = null
 let item2: Sprite = null
 let item1: Sprite = null
-let scan: Sprite = null
-let clear: Sprite = null
 let i: Sprite = null
 let imgIdx = 0
 let cursor: Sprite = null
