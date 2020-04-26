@@ -23,23 +23,67 @@ namespace myTiles {
 . . . . . . . . . . . . . . . . 
 . . . . . . . . . . . . . . . . 
 `
+    //% blockIdentity=images._tile
+    export const tile1 = img`
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . 2 2 . . . . . . . 
+. . . . . . . 2 2 . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+`
+    //% blockIdentity=images._tile
+    export const tile2 = img`
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . 9 9 . . . . . . . 
+. . . . . . . 9 9 . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+`
+    //% blockIdentity=images._tile
+    export const tile3 = img`
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . b b . . . . . . . 
+. . . . . . . b b . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+`
 }
 scene.onHitWall(SpriteKind.Item, function (sprite) {
     stop(sprite)
 })
-function setupBoard () {
-    for (let x = 0; x <= 9; x++) {
-        for (let y = 0; y <= 5; y++) {
-            imgIdx = Math.randomRange(0, itemImgs.length - 1)
-            j = sprites.create(itemImgs[imgIdx], SpriteKind.Item)
-            sprites.setDataNumber(j, "type", imgIdx)
-            grid.place(j, tiles.getTileLocation(x, y + 1))
-        }
-    }
-    isSettingUp = true
-    scanBoard()
-    settle()
-}
 function doSwap () {
     item1 = cursor
     item2 = cursor2
@@ -82,14 +126,25 @@ function stop (sprite: Sprite) {
     sprite.vy = 0
     grid.snap(sprite)
     scanFromSprite(sprite)
-    if (isSettingUp) {
-        renew()
-    }
+    renew()
     settle()
 }
 function scanFromSprite (item: Sprite) {
     scanRow(grid.spriteRow(item))
     scanColumn(grid.spriteCol(item))
+}
+function setupBoardRandom () {
+    for (let x = 0; x <= 9; x++) {
+        for (let y = 0; y <= 5; y++) {
+            imgIdx = Math.randomRange(0, itemImgs.length - 1)
+            j = sprites.create(itemImgs[imgIdx], SpriteKind.Item)
+            sprites.setDataNumber(j, "type", imgIdx)
+            grid.place(j, tiles.getTileLocation(x, y + 1))
+        }
+    }
+    isSettingUp = true
+    scanBoard()
+    settle()
 }
 sprites.onOverlap(SpriteKind.Item, SpriteKind.Item, function (sprite, otherSprite) {
     stop(sprite)
@@ -176,6 +231,29 @@ controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
         cursor.x += 16
     }
 })
+function setupBoardFixed () {
+    for (let value of tiles.getTilesByType(myTiles.tile1)) {
+        imgIdx = 0
+        j = sprites.create(itemImgs[imgIdx], SpriteKind.Item)
+        sprites.setDataNumber(j, "type", imgIdx)
+        grid.place(j, value)
+        tiles.setTileAt(value, sprites.dungeon.darkGroundSouthEast1)
+    }
+    for (let value of tiles.getTilesByType(myTiles.tile3)) {
+        imgIdx = 1
+        j = sprites.create(itemImgs[imgIdx], SpriteKind.Item)
+        sprites.setDataNumber(j, "type", imgIdx)
+        grid.place(j, value)
+        tiles.setTileAt(value, sprites.dungeon.darkGroundSouthEast1)
+    }
+    for (let value of tiles.getTilesByType(myTiles.tile2)) {
+        imgIdx = 2
+        j = sprites.create(itemImgs[imgIdx], SpriteKind.Item)
+        sprites.setDataNumber(j, "type", imgIdx)
+        grid.place(j, value)
+        tiles.setTileAt(value, sprites.dungeon.darkGroundSouthEast1)
+    }
+}
 function scanBoard () {
     for (let row = 0; row <= grid.numRows(); row++) {
         scanRow(row)
@@ -220,18 +298,18 @@ let needSettle = false
 let c2: Sprite = null
 let b2: Sprite = null
 let a2: Sprite = null
+let isSettingUp = false
+let j: Sprite = null
+let imgIdx = 0
 let isSelected = false
 let oldScore = 0
 let cursor2: Sprite = null
 let item2: Sprite = null
 let item1: Sprite = null
-let isSettingUp = false
-let j: Sprite = null
-let imgIdx = 0
 let cursor: Sprite = null
 let itemImgs: Image[] = []
 tiles.setTilemap(tiles.createTilemap(
-            hex`0a0008000303030303030303030302020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020201010101010101010101`,
+            hex`0a0008000303030303030303030304060506050604060505060405040604060504060506040506050406060504040606040504050406050604060506050606050604060505040604060401010101010101010101`,
             img`
 . . . . . . . . . . 
 . . . . . . . . . . 
@@ -242,7 +320,7 @@ tiles.setTilemap(tiles.createTilemap(
 . . . . . . . . . . 
 2 2 2 2 2 2 2 2 2 2 
 `,
-            [myTiles.tile0,sprites.dungeon.floorDark0,sprites.dungeon.darkGroundSouthEast1,sprites.dungeon.doorOpenNorth],
+            [myTiles.tile0,sprites.dungeon.floorDark0,sprites.dungeon.darkGroundSouthEast1,sprites.dungeon.doorOpenNorth,myTiles.tile1,myTiles.tile2,myTiles.tile3],
             TileScale.Sixteen
         ))
 itemImgs = [img`
@@ -280,14 +358,15 @@ c c b b c c c c b d d d b c c b
 . . . . . . c c b b b b c c . . 
 . . . . . . . . c c c c . . . . 
 `, img`
-. . . . . . . . . . . . . . . . 
 . . . . 8 8 8 8 8 8 8 8 . . . . 
 . . . 8 8 8 8 9 9 9 1 1 . . . . 
 . . 8 8 8 8 9 9 9 9 1 1 1 1 . . 
 . 8 8 8 8 8 8 9 9 1 1 1 1 1 1 . 
-. 8 8 8 8 8 8 8 1 1 1 1 1 1 1 . 
-. 9 9 9 9 9 9 9 9 9 9 9 9 9 9 . 
-. 9 9 9 9 9 9 9 1 1 1 1 1 1 1 . 
+8 8 8 8 8 8 8 8 1 1 1 1 1 1 1 1 
+8 8 8 8 8 8 8 8 1 1 1 1 1 1 1 1 
+9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+9 9 9 9 9 9 9 9 1 1 1 1 1 1 1 1 
+9 9 9 9 9 9 9 9 1 1 1 1 1 1 1 1 
 . 9 9 9 9 9 9 9 1 1 1 1 1 1 1 . 
 . . 9 9 9 9 9 9 1 1 1 1 1 1 . . 
 . . . 9 9 9 9 9 1 1 1 1 1 . . . 
@@ -295,9 +374,8 @@ c c b b c c c c b d d d b c c b
 . . . . . 9 9 9 1 1 1 . . . . . 
 . . . . . . 9 9 1 1 . . . . . . 
 . . . . . . . 9 1 . . . . . . . 
-. . . . . . . . . . . . . . . . 
 `]
-setupBoard()
+setupBoardFixed()
 cursor = sprites.create(img`
 5 5 5 5 5 5 5 . . 5 5 5 5 5 5 5 
 5 5 5 5 5 5 5 . . 5 5 5 5 5 5 5 
