@@ -172,8 +172,8 @@ function checkTriplet (a: Sprite, b: Sprite, c: Sprite) {
 }
 function renew () {
     for (let value of tiles.getTilesByType(sprites.dungeon.doorOpenNorth)) {
-        below = grid.getSprite(grid.add(value, 0, 1))
-        on = grid.getSprite(value)
+        below = grid.getSprites(grid.add(value, 0, 1)).length > 0
+        on = grid.getSprites(value).length > 0
         if (!(below) && !(on)) {
             imgIdx = Math.randomRange(0, itemImgs.length - 1)
             j = sprites.create(itemImgs[imgIdx], SpriteKind.Item)
@@ -232,26 +232,26 @@ controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
     }
 })
 function setupBoardFixed () {
-    for (let value of tiles.getTilesByType(myTiles.tile1)) {
+    for (let value2 of tiles.getTilesByType(myTiles.tile1)) {
         imgIdx = 0
         j = sprites.create(itemImgs[imgIdx], SpriteKind.Item)
         sprites.setDataNumber(j, "type", imgIdx)
-        grid.place(j, value)
-        tiles.setTileAt(value, sprites.dungeon.darkGroundSouthEast1)
+        grid.place(j, value2)
+        tiles.setTileAt(value2, sprites.dungeon.darkGroundSouthEast1)
     }
-    for (let value of tiles.getTilesByType(myTiles.tile3)) {
+    for (let value3 of tiles.getTilesByType(myTiles.tile3)) {
         imgIdx = 1
         j = sprites.create(itemImgs[imgIdx], SpriteKind.Item)
         sprites.setDataNumber(j, "type", imgIdx)
-        grid.place(j, value)
-        tiles.setTileAt(value, sprites.dungeon.darkGroundSouthEast1)
+        grid.place(j, value3)
+        tiles.setTileAt(value3, sprites.dungeon.darkGroundSouthEast1)
     }
-    for (let value of tiles.getTilesByType(myTiles.tile2)) {
+    for (let value4 of tiles.getTilesByType(myTiles.tile2)) {
         imgIdx = 2
         j = sprites.create(itemImgs[imgIdx], SpriteKind.Item)
         sprites.setDataNumber(j, "type", imgIdx)
-        grid.place(j, value)
-        tiles.setTileAt(value, sprites.dungeon.darkGroundSouthEast1)
+        grid.place(j, value4)
+        tiles.setTileAt(value4, sprites.dungeon.darkGroundSouthEast1)
     }
 }
 function scanBoard () {
@@ -265,11 +265,12 @@ function scanBoard () {
 function scanRow (row: number) {
     prev = cursor
     prevprev = cursor
-    for (let col = 0; col <= grid.numColumns(); col++) {
-        s = grid.getSprite(tiles.getTileLocation(col, row))
-        checkTriplet(s, prevprev, prev)
+    for (let col2 = 0; col2 <= grid.numColumns(); col2++) {
+        ss = grid.getSprites(tiles.getTileLocation(col2, row))
+        t = ss[0]
+        checkTriplet(t, prevprev, prev)
         prevprev = prev
-        prev = s
+        prev = t
     }
 }
 controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
@@ -282,18 +283,19 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
 })
 function settle () {
     if (needSettle) {
-        for (let value of sprites.allOfKind(SpriteKind.Item)) {
-            value.ay = 200
+        for (let value5 of sprites.allOfKind(SpriteKind.Item)) {
+            value5.ay = 200
         }
         needSettle = false
     }
 }
 let isSettling = false
-let s: Sprite = null
+let t: Sprite = null
+let ss: Sprite[] = []
 let prevprev: Sprite = null
 let prev: Sprite = null
-let on: Sprite = null
-let below: Sprite = null
+let on = false
+let below = false
 let needSettle = false
 let c2: Sprite = null
 let b2: Sprite = null
@@ -397,8 +399,8 @@ cursor = sprites.create(img`
 tiles.placeOnTile(cursor, tiles.getTileLocation(2, 2))
 game.onUpdateInterval(500, function () {
     isSettling = false
-    for (let value of sprites.allOfKind(SpriteKind.Item)) {
-        if (value.ay > 0) {
+    for (let value6 of sprites.allOfKind(SpriteKind.Item)) {
+        if (value6.ay > 0) {
             isSettling = true
         }
     }
