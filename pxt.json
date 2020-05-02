@@ -4,7 +4,8 @@
         "device": "*",
         "arcade-sprite-data": "github:microsoft/arcade-sprite-data#v0.0.5",
         "tilemaps": "github:microsoft/pxt-tilemaps#v1.7.1",
-        "arcade-grid": "github:darzu/arcade-grid#master"
+        "arcade-grid": "github:darzu/arcade-grid#v1.1.0",
+        "Timers": "github:darzu/arcade-timers#v1.0.0"
     },
     "description": "",
     "files": [

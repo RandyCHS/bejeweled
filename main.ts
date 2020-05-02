@@ -100,7 +100,6 @@ function doSwap () {
     }
     oldScore = info.score()
     scanBoard()
-    settle()
     if (oldScore == info.score()) {
         grid.swap(item1, item2)
     }
@@ -149,9 +148,6 @@ function setupBoardRandom () {
 sprites.onOverlap(SpriteKind.Item, SpriteKind.Item, function (sprite, otherSprite) {
     stop(sprite)
     stop(otherSprite)
-    if (sprite.overlapsWith(otherSprite)) {
-        sprite.destroy()
-    }
 })
 function checkTriplet (a: Sprite, b: Sprite, c: Sprite) {
     a2 = a
@@ -166,7 +162,7 @@ function checkTriplet (a: Sprite, b: Sprite, c: Sprite) {
             b.destroy(effects.smiles, 500)
             c.destroy(effects.smiles, 500)
             info.changeScoreBy(1)
-            needSettle = true
+            settle()
         }
     }
 }
@@ -179,7 +175,7 @@ function renew () {
             j = sprites.create(itemImgs[imgIdx], SpriteKind.Item)
             sprites.setDataNumber(j, "type", imgIdx)
             grid.place(j, value)
-            needSettle = true
+            j.ay = 200
         }
     }
 }
@@ -282,12 +278,11 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
     }
 })
 function settle () {
-    if (needSettle) {
+    timer.throttle("settle", 100, function () {
         for (let value5 of sprites.allOfKind(SpriteKind.Item)) {
             value5.ay = 200
         }
-        needSettle = false
-    }
+    })
 }
 let isSettling = false
 let t: Sprite = null
@@ -296,7 +291,6 @@ let prevprev: Sprite = null
 let prev: Sprite = null
 let on = false
 let below = false
-let needSettle = false
 let c2: Sprite = null
 let b2: Sprite = null
 let a2: Sprite = null
