@@ -83,6 +83,7 @@ namespace myTiles {
 }
 scene.onHitWall(SpriteKind.Item, function (sprite) {
     stop(sprite)
+    settle(sprite, CollisionDirection.Top)
 })
 function doSwap () {
     item1 = cursor
@@ -121,12 +122,9 @@ controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
     }
 })
 function stop (sprite: Sprite) {
-    sprite.ay = 0
-    sprite.vy = 0
-    grid.snap(sprite)
+    grid.snap(sprite, true)
     scanFromSprite(sprite)
     renew()
-    settle()
 }
 function scanFromSprite (item: Sprite) {
     scanRow(grid.spriteRow(item))
@@ -143,11 +141,25 @@ function setupBoardRandom () {
     }
     isSettingUp = true
     scanBoard()
-    settle()
 }
 sprites.onOverlap(SpriteKind.Item, SpriteKind.Item, function (sprite, otherSprite) {
-    stop(sprite)
-    stop(otherSprite)
+    if (sprite.ay == 0 || otherSprite.ay == 0) {
+        stop(sprite)
+        stop(otherSprite)
+        if (sprite.y < otherSprite.y) {
+            settle(sprite, CollisionDirection.Top)
+        } else {
+            settle(otherSprite, CollisionDirection.Top)
+        }
+        // this is a hack and shouldn't  be needed
+        //
+        // The issue is that physics is messy and sometimes
+        // sprites overlap  too much before the event fires.
+        if (sprite.overlapsWith(otherSprite)) {
+            sprite.destroy()
+            settle(otherSprite, CollisionDirection.Top)
+        }
+    }
 })
 function checkTriplet (a: Sprite, b: Sprite, c: Sprite) {
     a2 = a
@@ -162,19 +174,22 @@ function checkTriplet (a: Sprite, b: Sprite, c: Sprite) {
             b.destroy(effects.smiles, 500)
             c.destroy(effects.smiles, 500)
             info.changeScoreBy(1)
-            settle()
+            settle(a, CollisionDirection.Top)
+            settle(b, CollisionDirection.Top)
+            settle(c, CollisionDirection.Top)
+            renew()
         }
     }
 }
 function renew () {
-    for (let value of tiles.getTilesByType(sprites.dungeon.doorOpenNorth)) {
-        below = grid.getSprites(grid.add(value, 0, 1)).length > 0
-        on = grid.getSprites(value).length > 0
+    for (let s1 of tiles.getTilesByType(sprites.dungeon.doorOpenNorth)) {
+        below = grid.getSprites(grid.add(s1, 0, 1)).length > 0
+        on = grid.getSprites(s1).length > 0
         if (!(below) && !(on)) {
             imgIdx = Math.randomRange(0, itemImgs.length - 1)
             j = sprites.create(itemImgs[imgIdx], SpriteKind.Item)
             sprites.setDataNumber(j, "type", imgIdx)
-            grid.place(j, value)
+            grid.place(j, s1)
             j.ay = 200
         }
     }
@@ -277,14 +292,15 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
         cursor.y += -16
     }
 })
-function settle () {
-    timer.throttle("settle", 100, function () {
-        for (let value5 of sprites.allOfKind(SpriteKind.Item)) {
-            value5.ay = 200
+function settle (fromSprite: Sprite, direction: number) {
+    for (let s of grid.lineAdjacentSprites(grid.getLocation(fromSprite), direction, grid.numRows())) {
+        if (s.kind() == SpriteKind.Item) {
+            s.ay = 200
         }
-    })
+    }
 }
 let isSettling = false
+let noneBelow = false
 let t: Sprite = null
 let ss: Sprite[] = []
 let prevprev: Sprite = null
@@ -391,6 +407,18 @@ cursor = sprites.create(img`
 5 5 5 5 5 5 5 . . 5 5 5 5 5 5 5 
 `, SpriteKind.Player)
 tiles.placeOnTile(cursor, tiles.getTileLocation(2, 2))
+game.onUpdateInterval(500, function () {
+    for (let s1 of grid.allSprites()) {
+        if (s1.vy == 0) {
+            noneBelow = grid.getSprites(grid.add(grid.getLocation(s1), 0, 1)).length == 0
+            if (noneBelow && !(tilemap.tileIsWall(grid.add(grid.getLocation(s1), 0, 1)))) {
+                for (let s2 of grid.lineAdjacentSprites(grid.add(grid.getLocation(s1), 0, 1), CollisionDirection.Top, grid.numRows())) {
+                    s2.ay = 200
+                }
+            }
+        }
+    }
+})
 game.onUpdateInterval(500, function () {
     isSettling = false
     for (let value6 of sprites.allOfKind(SpriteKind.Item)) {
