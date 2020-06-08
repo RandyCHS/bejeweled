@@ -81,9 +81,13 @@ namespace myTiles {
 . . . . . . . . . . . . . . . . 
 `
 }
-scene.onHitWall(SpriteKind.Item, function (sprite) {
-    stop(sprite)
-    settle(sprite, CollisionDirection.Top)
+controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (isSelected) {
+        cursor2.y = cursor.y - 16
+        cursor2.x = cursor.x
+    } else {
+        cursor.y += -16
+    }
 })
 function doSwap () {
     item1 = cursor
@@ -103,95 +107,6 @@ function doSwap () {
     scanBoard()
     if (oldScore == info.score()) {
         grid.swap(item1, item2)
-    }
-}
-controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (isSelected) {
-        cursor2.x = cursor.x - 16
-        cursor2.y = cursor.y
-    } else {
-        cursor.x += -16
-    }
-})
-controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (isSelected) {
-        cursor2.y = cursor.y + 16
-        cursor2.x = cursor.x
-    } else {
-        cursor.y += 16
-    }
-})
-function stop (sprite: Sprite) {
-    grid.snap(sprite, true)
-    scanFromSprite(sprite)
-    renew()
-}
-function scanFromSprite (item: Sprite) {
-    scanRow(grid.spriteRow(item))
-    scanColumn(grid.spriteCol(item))
-}
-function setupBoardRandom () {
-    for (let x = 0; x <= 9; x++) {
-        for (let y = 0; y <= 5; y++) {
-            imgIdx = Math.randomRange(0, itemImgs.length - 1)
-            j = sprites.create(itemImgs[imgIdx], SpriteKind.Item)
-            sprites.setDataNumber(j, "type", imgIdx)
-            grid.place(j, tiles.getTileLocation(x, y + 1))
-        }
-    }
-    isSettingUp = true
-    scanBoard()
-}
-sprites.onOverlap(SpriteKind.Item, SpriteKind.Item, function (sprite, otherSprite) {
-    if (sprite.ay == 0 || otherSprite.ay == 0) {
-        stop(sprite)
-        stop(otherSprite)
-        if (sprite.y < otherSprite.y) {
-            settle(sprite, CollisionDirection.Top)
-        } else {
-            settle(otherSprite, CollisionDirection.Top)
-        }
-        // this is a hack and shouldn't  be needed
-        //
-        // The issue is that physics is messy and sometimes
-        // sprites overlap  too much before the event fires.
-        if (sprite.overlapsWith(otherSprite)) {
-            sprite.destroy()
-            settle(otherSprite, CollisionDirection.Top)
-        }
-    }
-})
-function checkTriplet (a: Sprite, b: Sprite, c: Sprite) {
-    a2 = a
-    b2 = b
-    c2 = c
-    if (a2 && b2 && c2) {
-        if (sprites.readDataNumber(a, "type") == sprites.readDataNumber(b, "type") && sprites.readDataNumber(b, "type") == sprites.readDataNumber(c, "type")) {
-            a.setFlag(SpriteFlag.Ghost, true)
-            b.setFlag(SpriteFlag.Ghost, true)
-            c.setFlag(SpriteFlag.Ghost, true)
-            a.destroy(effects.smiles, 500)
-            b.destroy(effects.smiles, 500)
-            c.destroy(effects.smiles, 500)
-            info.changeScoreBy(1)
-            settle(a, CollisionDirection.Top)
-            settle(b, CollisionDirection.Top)
-            settle(c, CollisionDirection.Top)
-            renew()
-        }
-    }
-}
-function renew () {
-    for (let s1 of tiles.getTilesByType(sprites.dungeon.doorOpenNorth)) {
-        below = grid.getSprites(grid.add(s1, 0, 1)).length > 0
-        on = grid.getSprites(s1).length > 0
-        if (!(below) && !(on)) {
-            imgIdx = Math.randomRange(0, itemImgs.length - 1)
-            j = sprites.create(itemImgs[imgIdx], SpriteKind.Item)
-            sprites.setDataNumber(j, "type", imgIdx)
-            grid.place(j, s1)
-            j.ay = 200
-        }
     }
 }
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
@@ -225,13 +140,57 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
         cursor2.y = cursor.y
     }
 })
-function scanColumn (col: number) {
-    prev = cursor
-    prevprev = cursor
-    for (let s of grid.colSprites(col)) {
-        checkTriplet(s, prevprev, prev)
-        prevprev = prev
-        prev = s
+function stop (sprite: Sprite) {
+    grid.snap(sprite, true)
+    scanFromSprite(sprite)
+    renew()
+}
+controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (isSelected) {
+        cursor2.x = cursor.x - 16
+        cursor2.y = cursor.y
+    } else {
+        cursor.x += -16
+    }
+})
+function scanFromSprite (item: Sprite) {
+    scanRow(grid.spriteRow(item))
+    scanColumn(grid.spriteCol(item))
+}
+function setupBoardRandom () {
+    for (let x = 0; x <= 9; x++) {
+        for (let y = 0; y <= 5; y++) {
+            imgIdx = randint(0, itemImgs.length - 1)
+            j = sprites.create(itemImgs[imgIdx], SpriteKind.Item)
+            sprites.setDataNumber(j, "type", imgIdx)
+            grid.place(j, tiles.getTileLocation(x, y + 1))
+        }
+    }
+    isSettingUp = true
+    scanBoard()
+}
+scene.onHitWall(SpriteKind.Item, function (sprite) {
+    stop(sprite)
+    settle(sprite, CollisionDirection.Top)
+})
+function checkTriplet (a: Sprite, b: Sprite, c: Sprite) {
+    a2 = a
+    b2 = b
+    c2 = c
+    if (a2 && b2 && c2) {
+        if (sprites.readDataNumber(a, "type") == sprites.readDataNumber(b, "type") && sprites.readDataNumber(b, "type") == sprites.readDataNumber(c, "type")) {
+            a.setFlag(SpriteFlag.Ghost, true)
+            b.setFlag(SpriteFlag.Ghost, true)
+            c.setFlag(SpriteFlag.Ghost, true)
+            a.destroy(effects.smiles, 500)
+            b.destroy(effects.smiles, 500)
+            c.destroy(effects.smiles, 500)
+            info.changeScoreBy(1)
+            settle(a, CollisionDirection.Top)
+            settle(b, CollisionDirection.Top)
+            settle(c, CollisionDirection.Top)
+            renew()
+        }
     }
 }
 controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
@@ -242,6 +201,28 @@ controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
         cursor.x += 16
     }
 })
+function renew () {
+    for (let s1 of tiles.getTilesByType(sprites.dungeon.doorOpenNorth)) {
+        below = grid.getSprites(grid.add(s1, 0, 1)).length > 0
+        on = grid.getSprites(s1).length > 0
+        if (!(below) && !(on)) {
+            imgIdx = randint(0, itemImgs.length - 1)
+            j = sprites.create(itemImgs[imgIdx], SpriteKind.Item)
+            sprites.setDataNumber(j, "type", imgIdx)
+            grid.place(j, s1)
+            j.ay = 200
+        }
+    }
+}
+function scanColumn (col: number) {
+    prev = cursor
+    prevprev = cursor
+    for (let s of grid.colSprites(col)) {
+        checkTriplet(s, prevprev, prev)
+        prevprev = prev
+        prev = s
+    }
+}
 function setupBoardFixed () {
     for (let value2 of tiles.getTilesByType(myTiles.tile1)) {
         imgIdx = 0
@@ -273,6 +254,31 @@ function scanBoard () {
         scanColumn(col)
     }
 }
+controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (isSelected) {
+        cursor2.y = cursor.y + 16
+        cursor2.x = cursor.x
+    } else {
+        cursor.y += 16
+    }
+})
+sprites.onOverlap(SpriteKind.Item, SpriteKind.Item, function (sprite, otherSprite) {
+    if (sprite.ay == 0 || otherSprite.ay == 0) {
+        stop(sprite)
+        stop(otherSprite)
+        if (sprite.y < otherSprite.y) {
+            settle(sprite, CollisionDirection.Top)
+        } else {
+            settle(otherSprite, CollisionDirection.Top)
+        }
+        // this is a hack and shouldn't  be needed
+        // The issue is that physics is messy and sometimes sprites overlap  too much before the event fires.
+        if (sprite.overlapsWith(otherSprite)) {
+            sprite.destroy()
+            settle(otherSprite, CollisionDirection.Top)
+        }
+    }
+})
 function scanRow (row: number) {
     prev = cursor
     prevprev = cursor
@@ -284,16 +290,8 @@ function scanRow (row: number) {
         prev = t
     }
 }
-controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (isSelected) {
-        cursor2.y = cursor.y - 16
-        cursor2.x = cursor.x
-    } else {
-        cursor.y += -16
-    }
-})
 function settle (fromSprite: Sprite, direction: number) {
-    for (let s of grid.lineAdjacentSprites(grid.getLocation(fromSprite), direction, grid.numRows())) {
+    for (let s of grid.lineAdjacentSprites(grid.getLocation(fromSprite), CollisionDirection.Left, grid.numRows())) {
         if (s.kind() == SpriteKind.Item) {
             s.ay = 200
         }
@@ -313,11 +311,11 @@ let a2: Sprite = null
 let isSettingUp = false
 let j: Sprite = null
 let imgIdx = 0
-let isSelected = false
 let oldScore = 0
-let cursor2: Sprite = null
 let item2: Sprite = null
 let item1: Sprite = null
+let cursor2: Sprite = null
+let isSelected = false
 let cursor: Sprite = null
 let itemImgs: Image[] = []
 tiles.setTilemap(tiles.createTilemap(
@@ -412,7 +410,7 @@ game.onUpdateInterval(500, function () {
         if (s1.vy == 0) {
             noneBelow = grid.getSprites(grid.add(grid.getLocation(s1), 0, 1)).length == 0
             if (noneBelow && !(tilemap.tileIsWall(grid.add(grid.getLocation(s1), 0, 1)))) {
-                for (let s2 of grid.lineAdjacentSprites(grid.add(grid.getLocation(s1), 0, 1), CollisionDirection.Top, grid.numRows())) {
+                for (let s2 of grid.lineAdjacentSprites(grid.add(grid.getLocation(s1), 0, 1), CollisionDirection.Left, grid.numRows())) {
                     s2.ay = 200
                 }
             }

@@ -1,5 +1,7 @@
 {
     "name": "GemCrush",
+    "version": "0.0.1",
+    "description": "",
     "dependencies": {
         "device": "*",
         "arcade-sprite-data": "github:microsoft/arcade-sprite-data#v0.0.5",
@@ -8,15 +10,16 @@
         "Timers": "github:darzu/arcade-timers#v1.0.0",
         "arcade-clock": "github:pelikhan/arcade-clock#v0.0.2"
     },
-    "description": "",
     "files": [
         "main.blocks",
         "main.ts",
         "README.md"
     ],
-    "preferredEditor": "blocksprj",
     "testFiles": [
         "test.ts"
     ],
-    "version": "0.0.1"
+    "supportedTargets": [
+        "arcade"
+    ],
+    "preferredEditor": "blocksprj"
 }
